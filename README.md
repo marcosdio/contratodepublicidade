@@ -1,79 +1,217 @@
-# Sistema de Gestão de Contratos de Publicidade — Case Study
+# Sistema de Gestão de Contratos de Publicidade
 
-*Um sistema desenvolvido para digitalizar o controle financeiro e de conformidade de um órgão público que antes dependia inteiramente de planilhas.*
+## Case Study
 
-> Este repositório documenta a arquitetura e as decisões de engenharia do projeto — não o código-fonte.
+Este projeto documenta a concepção e o desenvolvimento de um sistema para gestão do ciclo financeiro, documental e operacional de contratos de publicidade em um órgão público estadual.
 
----
+O objetivo deste repositório é apresentar a arquitetura da solução, as decisões de produto, as regras de negócio e os principais desafios enfrentados durante o desenvolvimento. O código-fonte não é disponibilizado.
 
-## Minha função neste projeto
+## Contexto
 
-Não sou desenvolvedor — meu papel aqui foi de dono de produto e arquiteto de solução. Eu identifiquei o problema, levantei cada regra de negócio a partir do processo real da equipe (o que pode ser corrigido sem aprovação, quando um vencimento muda de faixa de SLA, o que trava um pagamento), tomei as decisões de arquitetura e de produto, e conduzi a implementação do início ao fim.
+O processo era integralmente controlado por planilhas eletrônicas.
 
-A implementação foi feita com o **Claude Code** (Anthropic) como parceiro de engenharia: eu dirigindo cada decisão técnica e de negócio, revisando cada mudança, testando no navegador antes de qualquer coisa avançar. Não escondo isso — saber usar essa ferramenta bem, e saber fazer as perguntas certas de arquitetura, governança e regra de negócio, é exatamente a habilidade que este case study demonstra.
+Planos financeiros, notas fiscais, checklists de conformidade, atestados, ofícios e pagamentos eram administrados manualmente, distribuídos em diversos arquivos independentes, sem integração, rastreabilidade ou regras automatizadas.
 
-## O problema
+Além da complexidade operacional, o processo precisava atender requisitos típicos da administração pública:
 
-Um departamento de comunicação de um órgão público estadual controlava toda a execução de seus contratos de publicidade — planos financeiros, notas fiscais, checklists de conformidade, atestados de recebimento, ofícios e pagamentos — em planilhas Excel soltas, sem histórico auditável, sem regra de negócio automatizada e sem visibilidade consolidada do que estava pendente.
+- rastreabilidade das decisões;
+- histórico completo de alterações;
+- segregação de responsabilidades;
+- conformidade documental;
+- auditoria;
+- acompanhamento de prazos legais.
 
-O pedido: substituir isso por um sistema web único, sem perder nenhuma regra do processo real da equipe, e com trilha de auditoria completa (exigência natural de qualquer sistema financeiro público).
+O desafio não era apenas informatizar um processo existente, mas transformar um conjunto de rotinas administrativas em um sistema consistente, auditável e preparado para evoluir.
 
-## O que o sistema faz
+## Abordagem
 
-- **Plano Financeiro → Nota Fiscal → Checklist → Atestado/Ofício → Pagamento** — o ciclo de vida completo de uma contratação de publicidade, com vínculo automático entre os documentos por identificador de processo.
-- **Checklist de conformidade** guiado, que bloqueia a aprovação quando a Nota Fiscal diverge do Plano Financeiro vinculado (agência, campanha, empenho, fornecedor, valores).
-- **Cálculo automático de vencimento e SLA** — datas de vencimento avançam automaticamente para o próximo dia útil (considerando feriados cadastrados), e um painel de SLA mostra, por grupo, quantos dias faltam até cada lote de notas mudar de faixa (verde → amarelo → vermelho).
-- **Emissão de documentos oficiais em PDF** (Atestados e Ofícios), com numeração sequencial automática por exercício e texto institucional gerado a partir dos dados do processo.
-- **Importação/exportação de planilhas Excel** com validação linha a linha contra as mesmas regras de negócio da entrada manual — nunca um caminho "de exceção" mais permissivo que o outro.
-- **Dashboards operacional e executivo**, com filtros cruzados entre indicadores e gráficos (clicar num indicador filtra o gráfico e a tabela ao mesmo tempo).
+Este projeto foi conduzido a partir da modelagem do processo de negócio.
 
-## Decisões de engenharia que valem destaque
+Antes da implementação, foram mapeadas todas as etapas operacionais, identificadas as regras de negócio, definidos os fluxos, estados, exceções, permissões, indicadores e critérios de auditoria.
 
-**Auditoria e governança não foram "adicionadas depois"** — todo registro financeiro (Plano, Nota Fiscal, Atestado) herda um mixin comum que grava histórico completo de alterações, marca exclusão como lógica (nunca física) e distingue correção simples de substituição de registro, conforme o campo alterado for sensível ou não.
+A implementação utilizou ferramentas de desenvolvimento assistido por inteligência artificial como aceleradoras do processo de engenharia.
 
-**Nenhuma edição sensível é aplicada direto no banco.** Qualquer alteração num campo crítico (valor, CNPJ, vencimento) vira uma *Solicitação de Alteração* — um fluxo de 4 estados (Solicitada → Aprovada/Rejeitada → Aplicada) que exige um segundo usuário (Coordenador) para aprovar, com justificativa obrigatória e registro de quem pediu e quem aprovou.
+A IA foi empregada como ferramenta de desenvolvimento, enquanto todas as decisões relacionadas à arquitetura, modelagem, regras de negócio, experiência do usuário e validação funcional permaneceram orientadas pelo conhecimento do domínio e pela evolução contínua do produto.
 
-**Regras de negócio como funções puras, não como validação espalhada** — cálculo de vencimento, faixa de SLA, divergência entre Nota Fiscal e Plano Financeiro, tudo vive em módulos de regra isolados e testáveis, reaproveitados tanto pela tela quanto pela importação de planilha.
+Mais do que demonstrar o desenvolvimento de um software, este projeto procura ilustrar uma forma de trabalho baseada na combinação entre análise de processos, engenharia de produto e utilização estratégica de inteligência artificial para acelerar a construção de soluções complexas.
 
-**Design system próprio, sem framework CSS de terceiros** — construído em cima de Design Tokens (CSS custom properties), com tema claro/escuro, para manter a interface leve e consistente sem depender de Bootstrap/Tailwind.
+## Principais funcionalidades
 
-**Um único artefato Docker para os três ambientes** — a mesma imagem roda em desenvolvimento, homologação e produção; o que muda é só variável de ambiente e comando (`runserver` vs. `gunicorn`), nunca a imagem.
+### Gestão completa do ciclo operacional
+
+O sistema acompanha integralmente o fluxo de execução dos contratos:
+
+```
+Plano Financeiro
+        ↓
+Nota Fiscal
+        ↓
+Checklist de Conformidade
+        ↓
+Atestado ou Ofício
+        ↓
+Pagamento
+```
+
+Cada documento permanece vinculado ao mesmo processo durante todo o ciclo de vida.
+
+### Validação automática de conformidade
+
+A Nota Fiscal é validada automaticamente contra o Plano Financeiro correspondente.
+
+São verificadas, entre outras informações:
+
+- Secretaria
+- Agência
+- Campanha
+- Empenho
+- Fornecedor
+- Valores
+- Aplicação
+- Identificadores do processo
+
+Divergências impedem a aprovação da análise.
+
+### Controle de SLA
+
+O sistema acompanha automaticamente o prazo entre o recebimento da Nota Fiscal e a assinatura do Atestado.
+
+Os indicadores são separados entre:
+
+- Secretaria de Comunicação
+- Demais Secretarias
+
+Cada grupo possui metas próprias de atendimento e classificação automática por faixas de SLA.
+
+### Gestão automática de vencimentos
+
+Datas de vencimento são recalculadas automaticamente considerando:
+
+- finais de semana;
+- feriados cadastrados;
+- regras específicas do processo.
+
+### Emissão de documentos institucionais
+
+O sistema gera automaticamente:
+
+- Atestados;
+- Ofícios.
+
+Todos os documentos são produzidos em PDF utilizando modelos institucionais parametrizados pelos dados do processo.
+
+### Importação de planilhas
+
+Planilhas Excel podem ser importadas para o sistema.
+
+As mesmas regras utilizadas na entrada manual são aplicadas durante a importação, evitando tratamentos diferentes entre processos automatizados e operações realizadas pelo usuário.
+
+### Dashboards operacionais
+
+O sistema fornece indicadores para acompanhamento de:
+
+- produtividade;
+- situação operacional;
+- pagamentos;
+- SLA;
+- distribuição financeira;
+- pendências.
+
+Todos os gráficos e indicadores são integrados por filtros cruzados.
+
+## Decisões de engenharia
+
+### Auditoria como requisito estrutural
+
+A auditoria foi concebida como parte da arquitetura do sistema.
+
+Todos os registros financeiros possuem histórico completo de alterações, preservando rastreabilidade e trilha de auditoria.
+
+### Alterações críticas controladas
+
+Campos sensíveis não podem ser alterados diretamente.
+
+Qualquer modificação gera uma Solicitação de Alteração que percorre um fluxo próprio de aprovação, registrando:
+
+- solicitante;
+- aprovador;
+- justificativa;
+- histórico completo da operação.
+
+### Regras de negócio centralizadas
+
+As regras responsáveis por cálculos, validações e classificações permanecem isoladas da interface.
+
+Isso permite reutilização entre:
+
+- telas;
+- importação de planilhas;
+- geração de documentos;
+- dashboards;
+- validações futuras.
+
+### Design System próprio
+
+Toda a interface foi construída sobre um Design System baseado em Design Tokens (CSS Custom Properties).
+
+Essa abordagem garante consistência visual entre todos os módulos sem dependência de frameworks CSS de terceiros.
+
+### Infraestrutura única
+
+O mesmo artefato Docker é utilizado nos ambientes de:
+
+- desenvolvimento;
+- homologação;
+- produção.
+
+As diferenças entre ambientes são tratadas exclusivamente por configuração.
 
 ## Arquitetura
 
 ```
                               Usuário
                                 │
-                          Navegador (HTTPS)
+                         Navegador (HTTPS)
                                 │
                                 ▼
                         ┌───────────────┐
-                        │     Nginx     │  :80 → redirect / :443 (TLS)
+                        │     Nginx     │
                         └───────┬───────┘
-                                │ proxy_pass
+                                │
                                 ▼
                     ┌────────────────────────┐
-                    │   Django (Gunicorn)     │  :8000 (interno)
-                    └──────┬───────────┬──────┘
-                            │           │
-                            ▼           ▼
-                  ┌─────────────┐  ┌─────────┐
-                  │ PostgreSQL  │  │  Redis  │
-                  │  (dados)    │  │ (cache) │
-                  └─────────────┘  └─────────┘
-
-     Certbot renova o certificado TLS automaticamente, em background.
-     Tudo roda em containers Docker na mesma rede interna, orquestrado
-     por Docker Compose (overlay próprio por ambiente: dev/homolog/prod).
+                    │ Django + Gunicorn      │
+                    └──────┬───────────┬─────┘
+                           │           │
+                           ▼           ▼
+                     PostgreSQL      Redis
 ```
 
-## Stack técnica
+A infraestrutura utiliza Docker Compose para orquestração dos serviços, comunicação por rede interna entre containers e renovação automática de certificados TLS através do Let's Encrypt.
 
-`Python` · `Django` · `PostgreSQL` · `Redis` · `Gunicorn` · `Nginx` · `Docker` / `Docker Compose` · `Let's Encrypt` · CSS puro (design system próprio, sem framework)
+## Stack tecnológica
 
-## Telas do sistema
+- Python
+- Django
+- PostgreSQL
+- Redis
+- Gunicorn
+- Nginx
+- Docker
+- Docker Compose
+- Let's Encrypt
+- HTML
+- CSS (Design System próprio)
 
-*Dados fictícios — nenhuma informação do processo real aparece nas imagens abaixo.*
+## O que este projeto demonstra
+
+Além da implementação técnica, este projeto procura demonstrar uma abordagem para desenvolvimento de software orientada por domínio, onde a tecnologia atua como meio para resolver problemas de negócio.
+
+O foco esteve na compreensão do processo, na modelagem das regras operacionais e na construção de uma solução capaz de transformar um fluxo administrativo complexo em um sistema consistente, auditável e preparado para evolução contínua.
+
+## Imagens
+
+As telas apresentadas utilizam exclusivamente dados fictícios. Nenhuma informação institucional ou processo administrativo real é exibido neste repositório.
 
 ![Login](screenshots/01_login.png)
 
@@ -86,7 +224,3 @@ O pedido: substituir isso por um sistema web único, sem perder nenhuma regra do
 ![Planos Financeiros](screenshots/05_planos_financeiros.png)
 
 ![Atestados e Ofícios](screenshots/07_atestados_consultar.png)
-
-## Sobre os dados
-
-Projeto desenvolvido de forma independente, fora do escopo formal de qualquer contrato, como iniciativa pessoal de estudo e aplicação prática de arquitetura de software. Dados, nomes de entidades e informações específicas do processo real não são divulgados aqui — as imagens acima usam uma base fictícia gerada só para esta demonstração.
