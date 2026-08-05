@@ -6,6 +6,12 @@
 
 ---
 
+## Minha função neste projeto
+
+Não sou desenvolvedor — meu papel aqui foi de dono de produto e arquiteto de solução. Eu identifiquei o problema, levantei cada regra de negócio a partir do processo real da equipe (o que pode ser corrigido sem aprovação, quando um vencimento muda de faixa de SLA, o que trava um pagamento), tomei as decisões de arquitetura e de produto, e conduzi a implementação do início ao fim.
+
+A implementação foi feita com o **Claude Code** (Anthropic) como parceiro de engenharia: eu dirigindo cada decisão técnica e de negócio, revisando cada mudança, testando no navegador antes de qualquer coisa avançar. Não escondo isso — saber usar essa ferramenta bem, e saber fazer as perguntas certas de arquitetura, governança e regra de negócio, é exatamente a habilidade que este case study demonstra.
+
 ## O problema
 
 Um departamento de comunicação de um órgão público estadual controlava toda a execução de seus contratos de publicidade — planos financeiros, notas fiscais, checklists de conformidade, atestados de recebimento, ofícios e pagamentos — em planilhas Excel soltas, sem histórico auditável, sem regra de negócio automatizada e sem visibilidade consolidada do que estava pendente.
@@ -65,6 +71,22 @@ O pedido: substituir isso por um sistema web único, sem perder nenhuma regra do
 
 `Python` · `Django` · `PostgreSQL` · `Redis` · `Gunicorn` · `Nginx` · `Docker` / `Docker Compose` · `Let's Encrypt` · CSS puro (design system próprio, sem framework)
 
-## Escopo e autoria
+## Telas do sistema
 
-Projeto desenvolvido de forma independente, fora do escopo formal de qualquer contrato, como iniciativa pessoal de estudo e aplicação prática de arquitetura de software. Dados, nomes de entidades e informações específicas do processo real não são divulgados aqui.
+*Dados fictícios — nenhuma informação do processo real aparece nas imagens abaixo.*
+
+![Login](screenshots/01_login.png)
+
+![Dashboard](screenshots/02_dashboard.png)
+
+![Notas Fiscais — Painel de SLA e contagem regressiva](screenshots/03_notas_fiscais_sla.png)
+
+![Detalhe da Nota Fiscal — histórico de auditoria](screenshots/04_nota_fiscal_detalhe.png)
+
+![Planos Financeiros](screenshots/05_planos_financeiros.png)
+
+![Atestados e Ofícios](screenshots/07_atestados_consultar.png)
+
+## Sobre os dados
+
+Projeto desenvolvido de forma independente, fora do escopo formal de qualquer contrato, como iniciativa pessoal de estudo e aplicação prática de arquitetura de software. Dados, nomes de entidades e informações específicas do processo real não são divulgados aqui — as imagens acima usam uma base fictícia gerada só para esta demonstração.
