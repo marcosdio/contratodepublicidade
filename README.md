@@ -171,6 +171,14 @@ O sistema fornece indicadores para acompanhamento de produtividade, situação o
 
 ![Planos Financeiros](screenshots/05_planos_financeiros.png)
 
+### Tema claro e escuro
+
+A interface tem tema claro e escuro, escolhidos pelo usuário, e as duas versões usam os mesmos Design Tokens: nenhuma tela tem cor própria fora do sistema de design.
+
+![Painel Executivo no tema escuro](screenshots/22_painel_executivo_escuro.png)
+
+![Atestados e Ofícios no tema escuro](screenshots/24_atestados_oficios_escuro.png)
+
 ## Decisões de engenharia
 
 ### Auditoria como requisito estrutural
